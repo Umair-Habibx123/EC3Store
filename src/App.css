@@ -1,0 +1,21 @@
+.main-content {
+  margin-top: 70px; /* Adjust this value based on your navbar height */
+}
+
+/* Animation for the WhatsApp button */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Apply the animation on hover */
+.hover\\:scale-110:hover {
+  animation: pulse 1.5s infinite;
+}

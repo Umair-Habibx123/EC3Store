@@ -1,0 +1,42 @@
+users
+||--- {emailNamed} (Document)
+      ||--- email: (String)
+      ||--- profilePic: (String)
+      ||--- username: (String)
+      ||--- role: (String)
+      ||--- address: (string)
+
+--------------------------------------------------------------------------------------------------
+
+userCart
+||--- {emailNamed} (Document)
+     ||--- items (array)
+     ||    ||--- 0 (map)
+               ||--- id (string)
+               ||--- image (string)
+               ||--- price (string)
+               ||--- quantity (number)
+               ||--- title (string)
+     ||    ||--- 1 (map)
+  
+--------------------------------------------------------------------------------------------------
+
+products
+||--- {productId(product1, product2...)} (document)
+     ||--- id (string)
+     ||--- image (string)
+     ||--- image2 (boolean)
+     ||--- originalPrice (string)
+     ||--- title (string)
+     ||--- discountedPrice (string)
+     ||--- details (map)
+     ||    ||--- straps (string)
+     ||    ||--- style (string)
+     ||    ||--- pouchInside (string)
+     ||    ||--- measurements (string)
+     ||    ||--- material (string)
+     ||    ||--- compartments (string)
+     ||    ||--- color (string)
+     ||    ||--- clutchInside (string)
+
+--------------------------------------------------------------------------------------------------

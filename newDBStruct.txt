@@ -1,0 +1,83 @@
+users
+||--- {userId} (Document)
+     ||--- email: string
+     ||--- username: string
+     ||--- profilePic: string
+     ||--- role: string ('user/customer', 'admin')
+     ||--- address: string
+     ||--- createdAt: Timestamp
+
+
+products
+||--- {productId} (Document) prod_0001....
+     ||--- id: string
+     ||--- isDeleted: false
+     ||--- title: string
+     ||--- categoryId: string
+     ||--- image: string
+     ||--- additionalImages: array [string]
+     ||--- originalPrice: number
+     ||--- discountedPrice: number
+     ||--- description: string
+     ||--- attributes: array (flexible by category)
+          0- (map)
+          {id: , name: , value}
+     ||--- createdAt: Timestamp
+     ||--- averageRating: number (updated when new reviews added)
+     ||--- reviewCount: number
+
+
+categories
+||--- {categoryId}  "string = name"
+     ||--- name: string ("Bags", "Shoes", etc.)
+     ||--- description: string
+     ||--- image: string
+
+     
+inventory
+||--- {inventoryId}    inv_prod_0001....
+     ||--- productId: string
+     ||--- inStock: boolean
+     ||--- stock: number
+     ||--- lowStockThreshold: number
+     ||--- warehouseLocation: string (optional)
+     ||--- updatedAt: Timestamp
+
+
+userCart
+||--- {userId}
+     ||--- cartItems (subcollection)
+          ||--- {cartItemId}
+               ||--- productId: string
+               ||--- title: string
+               ||--- image: string
+               ||--- price: number
+               ||--- quantity: number
+               ||--- addedAt: Timestamp
+
+orders
+||--- {orderId}
+     ||--- userId: string
+     ||--- items: array
+          0 - {map}
+            image
+            price
+            product id
+            quantity
+            title
+     ||--- totalPrice: number
+     ||--- shippingAddress: string
+     ||--- status: string ("pending", "confirmed", "shipped", "delivered", "cancelled")
+     ||--- createdAt: Timestamp
+     ||--- paymentStatus: string ("paid", "unpaid", "failed")
+     ||--- paymentMethod: string ("cash", "card")
+     ||--- transactionId: string (optional)
+
+
+
+products/{productId}/reviews
+||--- {reviewId}
+     ||--- userEmail: string
+     ||--- rating: number (1-5)
+     ||--- comment: string
+     ||--- createdAt: Timestamp
