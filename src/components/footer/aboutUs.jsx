@@ -90,10 +90,10 @@ const AboutUs = () => {
             <li>
               <strong>Website:</strong>{" "}
               <a
-                href="https://EC3 Store.vercel.app/"
+                href="https://ec3store.vercel.app/"
                 className="text-blue-600 hover:underline"
               >
-                https://EC3Store.vercel.app/
+                https://ec3store.vercel.app/
               </a>
             </li>
           </ul>

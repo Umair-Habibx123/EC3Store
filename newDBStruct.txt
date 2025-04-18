@@ -35,7 +35,7 @@ categories
 
      
 inventory
-||--- {inventoryId}    inv_prod_0001....
+||--- {inventoryId}    prod_0001....
      ||--- productId: string
      ||--- inStock: boolean
      ||--- stock: number

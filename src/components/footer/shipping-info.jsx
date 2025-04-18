@@ -40,7 +40,7 @@ const ShippingPolicy = () => {
                     <strong className="text-gray-900">TCS & M&P</strong>. For more
                     information, visit our website:{" "}
                     <a
-                        href="https://EC3Store.vercel.app/"
+                        href="https://ec3store.vercel.app/"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-blue-600 hover:underline font-semibold"

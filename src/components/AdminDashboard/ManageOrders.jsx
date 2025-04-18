@@ -68,8 +68,10 @@ function ManageOrdersPage() {
                 // Fetch inventory
                 const inventoryCollection = collection(db, "inventory");
                 const inventorySnapshot = await getDocs(inventoryCollection);
+                // In the fetchData function, change the inventory data mapping:
                 const inventoryData = inventorySnapshot.docs.map(doc => ({
                     id: doc.id,
+                    productId: doc.data().productId,  // Add this line
                     ...doc.data()
                 }));
 
@@ -153,12 +155,11 @@ function ManageOrdersPage() {
     const handleViewDetails = (orderId) => {
         navigate(`/admin-dashboard/orders/${orderId}`);
     };
-
     const handleUpdateInventory = async (order) => {
         try {
             setUpdatingStock(order.id);
             setStockUpdateStatus(null);
-
+    
             // Check if order is already processed
             if (order.inventoryUpdated) {
                 setStockUpdateStatus({
@@ -167,7 +168,7 @@ function ManageOrdersPage() {
                 });
                 return;
             }
-
+    
             // Check if order is cancelled
             if (order.status === 'cancelled') {
                 setStockUpdateStatus({
@@ -176,7 +177,7 @@ function ManageOrdersPage() {
                 });
                 return;
             }
-
+    
             // Check if order is delivered
             if (order.status === 'delivered') {
                 setStockUpdateStatus({
@@ -185,35 +186,36 @@ function ManageOrdersPage() {
                 });
                 return;
             }
-
+    
             // Find inventory items for products in the order
             const batch = writeBatch(db);
             let allItemsAvailable = true;
             const unavailableItems = [];
-
+    
             for (const item of order.items) {
                 const inventoryItem = inventory.find(inv => inv.productId === item.productId);
-
+    
                 if (!inventoryItem) {
                     allItemsAvailable = false;
                     unavailableItems.push(item.title || `Product ${item.productId}`);
                     continue;
                 }
-
+    
                 if (inventoryItem.stock < item.quantity) {
                     allItemsAvailable = false;
                     unavailableItems.push(`${item.title} (Available: ${inventoryItem.stock})`);
                     continue;
                 }
-
+    
                 // Update inventory in batch
                 const inventoryRef = doc(db, "inventory", inventoryItem.id);
                 batch.update(inventoryRef, {
                     stock: inventoryItem.stock - item.quantity,
-                    updatedAt: new Date()
+                    updatedAt: new Date(),
+                    inStock: (inventoryItem.stock - item.quantity) > 0  // Update inStock flag
                 });
             }
-
+    
             if (!allItemsAvailable) {
                 setStockUpdateStatus({
                     type: 'error',
@@ -221,32 +223,33 @@ function ManageOrdersPage() {
                 });
                 return;
             }
-
+    
             // Mark order as inventory updated
             const orderRef = doc(db, "orders", order.id);
             batch.update(orderRef, {
                 inventoryUpdated: true,
                 inventoryUpdatedAt: new Date()
             });
-
+    
             // Commit the batch
             await batch.commit();
-
+    
             // Update local state
             const updatedOrders = orders.map(o =>
                 o.id === order.id ? { ...o, inventoryUpdated: true } : o
             );
             setOrders(updatedOrders);
-
+    
             // Refresh inventory data
             const inventoryCollection = collection(db, "inventory");
             const inventorySnapshot = await getDocs(inventoryCollection);
             const inventoryData = inventorySnapshot.docs.map(doc => ({
                 id: doc.id,
+                productId: doc.data().productId,
                 ...doc.data()
             }));
             setInventory(inventoryData);
-
+    
             setStockUpdateStatus({
                 type: 'success',
                 message: 'Inventory updated successfully'
@@ -266,7 +269,7 @@ function ManageOrdersPage() {
         try {
             setUpdatingStock(order.id);
             setStockUpdateStatus(null);
-
+    
             // Check if inventory was previously updated for this order
             if (!order.inventoryUpdated) {
                 setStockUpdateStatus({
@@ -275,7 +278,7 @@ function ManageOrdersPage() {
                 });
                 return;
             }
-
+    
             // Check if order is already delivered
             if (order.status === 'delivered') {
                 setStockUpdateStatus({
@@ -284,48 +287,50 @@ function ManageOrdersPage() {
                 });
                 return;
             }
-
+    
             // Find inventory items for products in the order
             const batch = writeBatch(db);
-
+    
             for (const item of order.items) {
                 const inventoryItem = inventory.find(inv => inv.productId === item.productId);
-
+    
                 if (inventoryItem) {
                     // Restore inventory in batch
                     const inventoryRef = doc(db, "inventory", inventoryItem.id);
                     batch.update(inventoryRef, {
                         stock: inventoryItem.stock + item.quantity,
-                        updatedAt: new Date()
+                        updatedAt: new Date(),
+                        inStock: true  // Since we're adding stock back, set inStock to true
                     });
                 }
             }
-
+    
             // Mark order as inventory not updated
             const orderRef = doc(db, "orders", order.id);
             batch.update(orderRef, {
                 inventoryUpdated: false,
                 inventoryUpdatedAt: null
             });
-
+    
             // Commit the batch
             await batch.commit();
-
+    
             // Update local state
             const updatedOrders = orders.map(o =>
                 o.id === order.id ? { ...o, inventoryUpdated: false } : o
             );
             setOrders(updatedOrders);
-
+    
             // Refresh inventory data
             const inventoryCollection = collection(db, "inventory");
             const inventorySnapshot = await getDocs(inventoryCollection);
             const inventoryData = inventorySnapshot.docs.map(doc => ({
                 id: doc.id,
+                productId: doc.data().productId,
                 ...doc.data()
             }));
             setInventory(inventoryData);
-
+    
             setStockUpdateStatus({
                 type: 'success',
                 message: 'Inventory restored successfully'
@@ -340,6 +345,7 @@ function ManageOrdersPage() {
             setUpdatingStock(null);
         }
     };
+    
 
     if (loading) {
         return (
