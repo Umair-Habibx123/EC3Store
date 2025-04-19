@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "firebase/auth";
 import { db } from "../../firebase";
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import LoadingSpinner from "../../utils/LoadingSpinner"
 import {
   Menu,
   X,
@@ -31,7 +32,6 @@ function Navbar() {
     return false;
   });
 
-
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [profilePic, setProfilePic] = useState("/default-profile.png");
@@ -40,8 +40,6 @@ function Navbar() {
   const [isHidden, setIsHidden] = useState(false);
   const [prevScrollPos, setPrevScrollPos] = useState(window.pageYOffset);
   const [showBlockedModal, setShowBlockedModal] = useState(false);
-
-
   const auth = getAuth();
   const provider = new GoogleAuthProvider();
   const navigate = useNavigate();
@@ -163,6 +161,12 @@ function Navbar() {
     return null;
   }
 
+  if (!user) {
+    <div className="fixed inset-0 flex items-center justify-center bg-black/10 backdrop-blur-sm z-50">
+      <LoadingSpinner size="xl" />
+    </div>
+  }
+
   return (
     <nav
       ref={navRef}
@@ -179,7 +183,7 @@ function Navbar() {
                 alt="EC3 Store Logo"
                 className="w-10 h-10 transition-transform duration-300 group-hover:scale-110"
               />
-              <span className="text-xl font-bold hidden sm:block bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              <span className="text-xl font-bold block bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                 EC3 Store
               </span>
             </Link>
@@ -231,7 +235,10 @@ function Navbar() {
             {user && (
               <div className="relative" ref={dropdownRef}>
                 <button
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  onClick={() => {
+                    setIsDropdownOpen(!isDropdownOpen);
+                    if (isOpen) setIsOpen(false);
+                  }}
                   className="focus:outline-none"
                 >
                   <img
@@ -243,7 +250,11 @@ function Navbar() {
               </div>
             )}
             <button
-              onClick={() => setIsOpen(!isOpen)}
+              onClick={() => {
+                setIsOpen(!isOpen);
+                // Close the dropdown if it's open when clicking menu
+                if (isDropdownOpen) setIsDropdownOpen(false);
+              }}
               className="inline-flex items-center justify-center p-2 rounded-lg text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 focus:outline-none transition-colors"
             >
               {isOpen ? (
@@ -395,11 +406,38 @@ function Navbar() {
             </button>
           )}
         </div>
+      </div>
 
-        {user && isDropdownOpen && (
-          <div className="px-4 pt-2 pb-4 space-y-2 bg-gray-50 border-t border-gray-100">
+      {isDropdownOpen && (
+        <div
+          className="md:hidden fixed right-4 mt-2 w-56 bg-white rounded-xl shadow-lg py-1 z-50 border border-gray-100 overflow-hidden"
+          ref={dropdownRef}
+        >
+          <Link
+            to="/setting"
+            className="flex items-center px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+            onClick={() => {
+              closeMenu();
+              setIsDropdownOpen(false);
+            }}
+          >
+            <Settings className="w-5 h-5 mr-3" />
+            View Profile
+          </Link>
+          <Link
+            to="/MyOrders"
+            className="flex items-center px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+            onClick={() => {
+              closeMenu();
+              setIsDropdownOpen(false);
+            }}
+          >
+            <ShoppingBag className="w-5 h-5 mr-3" />
+            My Orders
+          </Link>
+          {userRole === "admin" && (
             <Link
-              to="/setting"
+              to="/admin-dashboard"
               className="flex items-center px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
               onClick={() => {
                 closeMenu();
@@ -407,87 +445,65 @@ function Navbar() {
               }}
             >
               <Settings className="w-5 h-5 mr-3" />
-              View Profile
+              Admin Dashboard
             </Link>
-            <Link
-              to="/MyOrders"
-              className="flex items-center px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
-              onClick={() => {
-                closeMenu();
-                setIsDropdownOpen(false);
-              }}
-            >
-              <ShoppingBag className="w-5 h-5 mr-3" />
-              My Orders
-            </Link>
-            {userRole === "admin" && (
-              <Link
-                to="/admin-dashboard"
-                className="flex items-center px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
-                onClick={() => {
-                  closeMenu();
-                  setIsDropdownOpen(false);
-                }}
-              >
-                <Settings className="w-5 h-5 mr-3" />
-                Admin Dashboard
-              </Link>
-            )}
-            <button
-              onClick={() => {
-                auth.signOut();
-                setUser(null);
-                setIsDropdownOpen(false);
-                navigate("/");
-                closeMenu();
-              }}
-              className="flex items-center w-full px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
-            >
-              <LogOut className="w-5 h-5 mr-3" />
-              Logout
-            </button>
-          </div>
-        )}
-      </div>
+          )}
+          <button
+            onClick={() => {
+              auth.signOut();
+              setUser(null);
+              setIsDropdownOpen(false);
+              navigate("/");
+              closeMenu();
+            }}
+            className="flex items-center w-full px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+          >
+            <LogOut className="w-5 h-5 mr-3" />
+            Logout
+          </button>
+        </div>
+      )}
       {/* Blocked User Modal */}
-      {showBlockedModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="relative bg-white rounded-xl shadow-2xl max-w-md w-full mx-auto overflow-hidden">
-            <div className="p-6 text-center">
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
-                <svg
-                  className="h-6 w-6 text-red-600"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Account Blocked
-              </h3>
-              <p className="text-gray-600 mb-6">
-                Your account has been blocked by the administrator. Please contact support for assistance.
-              </p>
-              <div className="flex justify-center">
-                <button
-                  onClick={() => setShowBlockedModal(false)}
-                  className="px-6 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                >
-                  Close
-                </button>
+      {
+        showBlockedModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <div className="relative bg-white rounded-xl shadow-2xl max-w-md w-full mx-auto overflow-hidden">
+              <div className="p-6 text-center">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                  <svg
+                    className="h-6 w-6 text-red-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Account Blocked
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  Your account has been blocked by the administrator. Please contact support for assistance.
+                </p>
+                <div className="flex justify-center">
+                  <button
+                    onClick={() => setShowBlockedModal(false)}
+                    className="px-6 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-    </nav>
+        )
+      }
+    </nav >
   );
 }
 

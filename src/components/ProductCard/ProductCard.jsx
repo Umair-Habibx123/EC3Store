@@ -5,12 +5,14 @@ import { collection, query, where, doc, setDoc, getDoc, getDocs, updateDoc, addD
 import { useUser } from "../../context/UserContext";
 import { useNavigate } from "react-router-dom";
 import { ShoppingCart, Zap, ChevronRight, X, LogIn, Check, Star, Heart } from "lucide-react";
+import LoadingSpinner from "../../utils/LoadingSpinner.jsx";
 
 const ProductCard = ({ product }) => {
   const [inventory, setInventory] = useState({
-    inStock: true,
+    inStock: false,
     stock: 0,
-    lowStockThreshold: 0
+    lowStockThreshold: 0,
+    loading: true
   });
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [added, setAdded] = useState(false);
@@ -22,6 +24,7 @@ const ProductCard = ({ product }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false); // Added for wishlist
 
   const handleMouseEnter = () => setIsHovered(true);
   const handleMouseLeave = () => setIsHovered(false);
@@ -61,16 +64,20 @@ const ProductCard = ({ product }) => {
 
   const fetchInventory = async () => {
     try {
+      setInventory(prev => ({ ...prev, loading: true }));
       const inventoryRef = doc(db, "inventory", product.id);
       const inventorySnap = await getDoc(inventoryRef);
       if (inventorySnap.exists()) {
-        setInventory(inventorySnap.data());
+        setInventory({
+          ...inventorySnap.data(),
+          loading: false
+        });
       } else {
-        // Set default values if inventory doc doesn't exist
         setInventory({
           inStock: false,
           stock: 0,
-          lowStockThreshold: 0
+          lowStockThreshold: 0,
+          loading: false
         });
       }
     } catch (error) {
@@ -78,7 +85,8 @@ const ProductCard = ({ product }) => {
       setInventory({
         inStock: false,
         stock: 0,
-        lowStockThreshold: 0
+        lowStockThreshold: 0,
+        loading: false
       });
     }
   }
@@ -171,13 +179,23 @@ const ProductCard = ({ product }) => {
     navigate(`/product/${product.id}`, { state: { product } });
   };
 
-  const toggleWishlist = (e) => {
+  const toggleWishlist = async (e) => {
     e.stopPropagation();
     if (!userContext) {
       setShowLoginPrompt(true);
       return;
     }
-    setIsWishlisted(!isWishlisted);
+
+    setWishlistLoading(true);
+    try {
+      // Simulate API call for wishlist toggle
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setIsWishlisted(!isWishlisted);
+    } catch (error) {
+      console.error("Error updating wishlist:", error);
+    } finally {
+      setWishlistLoading(false);
+    }
   };
 
   const isAdmin = userRole === "admin";
@@ -197,16 +215,21 @@ const ProductCard = ({ product }) => {
           className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
         />
 
-        {/* Wishlist Button */}
+        {/* Wishlist Button with Loading */}
         <button
           onClick={toggleWishlist}
-          className={`absolute top-3 left-3 p-2 rounded-full transition-all ${isWishlisted ? 'text-red-500 bg-white/90' : 'text-gray-400 bg-white/80 hover:bg-white/90'}`}
+          disabled={wishlistLoading}
+          className={`absolute top-3 left-3 p-2 rounded-full transition-all ${isWishlisted ? 'text-red-500 bg-white/90' : 'text-gray-400 bg-white/80 hover:bg-white/90'} ${wishlistLoading ? 'opacity-70' : ''}`}
         >
-          <Heart
-            size={18}
-            fill={isWishlisted ? "currentColor" : "none"}
-            strokeWidth={isWishlisted ? 2 : 1.5}
-          />
+          {wishlistLoading ? (
+            <LoadingSpinner size={18} className="text-current" />
+          ) : (
+            <Heart
+              size={18}
+              fill={isWishlisted ? "currentColor" : "none"}
+              strokeWidth={isWishlisted ? 2 : 1.5}
+            />
+          )}
         </button>
 
         {/* Discount Badge */}
@@ -214,12 +237,19 @@ const ProductCard = ({ product }) => {
           <span>{discountPercentage}% OFF</span>
         </div>
 
-        {/* Stock Status */}
-        {!inventory.inStock && (
-  <div className="absolute bottom-3 left-3 bg-gray-800/90 text-white text-xs font-medium px-2.5 py-1 rounded-full">
-    Out of Stock
-  </div>
-)}
+
+
+        {/* Stock Status with Loading */}
+        {inventory.loading ? (
+          <div className="absolute bottom-3 left-3 bg-gray-800/90 text-white text-xs font-medium px-2.5 py-1 rounded-full flex items-center">
+            <LoadingSpinner size={12} className="mr-1" />
+            Checking stock...
+          </div>
+        ) : !inventory.inStock ? (
+          <div className="absolute bottom-3 left-3 bg-gray-800/90 text-white text-xs font-medium px-2.5 py-1 rounded-full">
+            Out of Stock
+          </div>
+        ) : null}
 
         {/* Quick View Button */}
         {isHovered && (
@@ -272,19 +302,17 @@ const ProductCard = ({ product }) => {
         <div className="flex gap-2 mt-auto">
           <button
             onClick={handleAddToCart}
-            disabled={isLoading || added || isAdmin || !inventory.inStock}
+            disabled={isLoading || added || isAdmin || !inventory.inStock || inventory.loading}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium transition-all ${isAdmin
               ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-              : !inventory.inStock
+              : !inventory.inStock || inventory.loading
                 ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                 : "bg-gray-900 text-white hover:bg-gray-800"
               }`}
           >
             {isLoading ? (
               <>
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                </svg>
+                <LoadingSpinner size={16} className="text-current" />
                 Adding...
               </>
             ) : added ? (
@@ -302,8 +330,8 @@ const ProductCard = ({ product }) => {
 
           <button
             onClick={handleBuyNow}
-            disabled={isAdmin || !inventory.inStock}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium transition-all ${isAdmin || !inventory.inStock
+            disabled={isAdmin || !inventory.inStock || inventory.loading}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium transition-all ${isAdmin || !inventory.inStock || inventory.loading
               ? "bg-gray-100 text-gray-400 cursor-not-allowed"
               : "bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-600 hover:shadow-md"
               }`}

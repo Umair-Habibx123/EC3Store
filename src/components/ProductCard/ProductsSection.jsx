@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import ProductCard from "./ProductCard";
 import { db } from "../../firebase";
 import { collection, getDocs } from "firebase/firestore";
+import LoadingSpinner from "../../utils/LoadingSpinner";
 
 const ProductsSection = () => {
   const [products, setProducts] = useState([]);
@@ -41,6 +42,10 @@ const ProductsSection = () => {
 
   // Slice to only show the first 10 products
   const firstFiveProducts = products.slice(0, 10);
+
+  if (!products) {
+    <LoadingSpinner size="xl" />
+  }
 
   return (
     <section className="py-12 px-6 bg-gray-100 w-full">

@@ -4,7 +4,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useUser } from '../../context/UserContext';
-import Loading from "../../components/loadingIndicator/loading"
+import LoadingSpinner from "../../utils/LoadingSpinner"
 import {
   ArrowLeft,
   Plus,
@@ -225,7 +225,9 @@ const BuyNowPage = () => {
   };
 
   if (!product) {
-    <Loading />
+    <div className="fixed inset-0 flex items-center justify-center bg-black/10 backdrop-blur-sm z-50">
+      <LoadingSpinner size="xl" />
+    </div>
   }
 
 
@@ -601,17 +603,17 @@ const BuyNowPage = () => {
 
             {/* Checkout Button */}
             <button
-  onClick={handleCheckout}
-  disabled={!address || paymentMethod === 'card'}
-  className={`w-full py-4 rounded-xl font-semibold flex items-center justify-center transition-all duration-200
+              onClick={handleCheckout}
+              disabled={!address || paymentMethod === 'card'}
+              className={`w-full py-4 rounded-xl font-semibold flex items-center justify-center transition-all duration-200
     ${!address || paymentMethod === 'card'
-      ? 'bg-gradient-to-r from-gray-400 to-gray-500 text-gray-200 cursor-not-allowed shadow-inner'
-      : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 shadow-md hover:shadow-lg'}
+                  ? 'bg-gradient-to-r from-gray-400 to-gray-500 text-gray-200 cursor-not-allowed shadow-inner'
+                  : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 shadow-md hover:shadow-lg'}
   `}
->
-  Proceed to Checkout
-  <ArrowLeft className="w-5 h-5 ml-2 transform rotate-180" />
-</button>
+            >
+              Proceed to Checkout
+              <ArrowLeft className="w-5 h-5 ml-2 transform rotate-180" />
+            </button>
 
           </div>
         </div>

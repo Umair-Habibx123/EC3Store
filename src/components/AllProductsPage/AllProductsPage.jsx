@@ -5,7 +5,7 @@ import { db } from "../../firebase.js";
 import { Search, X, ChevronLeft, ChevronRight, Loader2, Filter } from "lucide-react";
 
 const AllProductsPage = () => {
-  const itemsPerPage = 12; // Increased for better grid layout
+  const itemsPerPage = 12;
   const [currentPage, setCurrentPage] = useState(1);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -14,7 +14,7 @@ const AllProductsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [priceRange, setPriceRange] = useState(null); // Add price range state
+  const [priceRange, setPriceRange] = useState(null);
 
   // Define price ranges in Rs
   const priceRanges = [
@@ -134,7 +134,7 @@ const AllProductsPage = () => {
       <div>
         {/* Mobile filter dialog */}
         <div className={`fixed inset-0 z-40 lg:hidden ${mobileFiltersOpen ? 'block' : 'hidden'}`}>
-          <div className="fixed inset-0 bg-black bg-opacity-25" onClick={() => setMobileFiltersOpen(false)} />
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setMobileFiltersOpen(false)} />
           <div className="fixed inset-y-0 left-0 flex max-w-xs w-full bg-white shadow-xl">
             <div className="w-full h-full overflow-y-auto py-4 px-4 sm:px-6">
               <div className="flex items-center justify-between border-b border-gray-200 pb-4">

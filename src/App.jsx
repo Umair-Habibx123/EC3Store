@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom'
 import { UserProvider } from "./context/UserContext"
 
@@ -31,23 +31,16 @@ import AboutUs from './components/footer/aboutUs';
 import PageNotFound from './components/PageNotFound/PageNotFound';
 import Footer from "./components/footer/footer"
 import { MessageCircle } from 'lucide-react'
-import Loading from './components/loadingIndicator/loading.jsx'
 import "./App.css"
 import OrderDetailsPage from './components/MyOrders/orderdetails.jsx'
 
 
 function ScrollToTop() {
   const location = useLocation();
-  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    setIsLoading(true);
     window.scrollTo(0, 0);
-    const timer = setTimeout(() => setIsLoading(false), 500); 
-    return () => clearTimeout(timer);
   }, [location]);
-
-  return isLoading ? <Loading /> : null;
 }
 
 function App() {
