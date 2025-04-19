@@ -3,7 +3,7 @@ import React from 'react';
 
 const PageNotFound = () => {
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100 p-6">
+        <div className="-mt-[70px] flex items-center justify-center min-h-screen bg-gray-100 p-6">
             <div className="text-center bg-white p-8 rounded-lg shadow-xl max-w-md w-full">
                 <h1 className="text-7xl font-bold text-gray-800 mb-4 animate-bounce">🚀 404</h1>
                 <p className="text-xl text-gray-600 mb-6">

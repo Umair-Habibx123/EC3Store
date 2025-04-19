@@ -1,18 +1,20 @@
-import React from "react";
+import { useState, useEffect } from "react";
 import { getAuth } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import Forbidden from "../components/AdminDashboard/Forbidden";
+import LoadingSpinner from "../utils/LoadingSpinner";
 
 const ProtectedRoute = ({ children, requiredRole }) => {
     const auth = getAuth();
-    const user = auth.currentUser;
+    const [user, setUser] = useState(null);
+    const [role, setRole] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const [role, setRole] = React.useState(null);
-    const [isLoading, setIsLoading] = React.useState(true);
+    useEffect(() => {
 
-    React.useEffect(() => {
-        const fetchUserRole = async () => {
+        const unsubscribe = auth.onAuthStateChanged(async (user) => {
+            setUser(user);
             if (user) {
                 const userDocRef = doc(db, "users", user.uid);
                 const userDocSnap = await getDoc(userDocRef);
@@ -22,12 +24,17 @@ const ProtectedRoute = ({ children, requiredRole }) => {
                 }
             }
             setIsLoading(false);
-        };
+        });
 
-        fetchUserRole();
-    }, [user]);
+        return () => unsubscribe();
+    }, [auth]);
 
-    if (isLoading) return <div>Loading...</div>;
+    if (isLoading) {
+        return (
+
+            <LoadingSpinner size="xl" />
+        );
+    }
 
     if (!user || role !== requiredRole) {
         return <Forbidden />;

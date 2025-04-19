@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { db } from "../../firebase";
 import { Link } from "react-router-dom";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { doc, setDoc, getDoc, collection, getDocs, deleteDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, collection, getDocs, deleteDoc, serverTimestamp } from "firebase/firestore";
 import { useUser } from "../../context/UserContext";
 import { ShoppingBag, Trash2, Plus, Minus, Check, ChevronRight, Loader2 } from "lucide-react";
 
@@ -34,18 +34,15 @@ const CartPage = () => {
                         ...doc.data()
                     }));
 
-                    // Check each product in the cart against the products collection
                     const validatedItems = await Promise.all(
                         items.map(async (item) => {
                             try {
-                                const productRef = doc(db, "products", item.id);
+                                const productRef = doc(db, "products", item.productId);
                                 const productSnap = await getDoc(productRef);
 
                                 if (productSnap.exists()) {
                                     const productData = productSnap.data();
-                                    // Exclude if product is deleted
                                     if (productData.isDeleted === true) {
-                                        // Remove from cart if product is deleted
                                         await deleteDoc(doc(db, "userCart", currentUser.uid, "cartItems", item.id));
                                         return null;
                                     }
@@ -57,13 +54,13 @@ const CartPage = () => {
                                         image: productData.image || item.image
                                     };
                                 } else {
-                                    // Remove from cart if product doesn't exist
+
                                     await deleteDoc(doc(db, "userCart", currentUser.uid, "cartItems", item.id));
                                     return null;
                                 }
                             } catch (error) {
                                 console.error("Error validating product:", error);
-                                return item; // Keep in cart if there's an error checking
+                                return item; 
                             }
                         })
                     );
@@ -82,11 +79,12 @@ const CartPage = () => {
             };
             fetchCart();
         }
-    }, [currentUser]);
+    }, [currentUser, selectedItems]);
 
     useEffect(() => {
         calculateTotalPrice(validCartItems, selectedItems);
     }, [selectedItems, validCartItems]);
+
 
     const handleSignIn = async () => {
         try {
@@ -98,26 +96,30 @@ const CartPage = () => {
 
             if (userDocSnap.exists()) {
                 const userData = userDocSnap.data();
+
                 setUserRole(userData.role || "user");
                 setProfilePic(userData.profilePic || "/default-profile.png");
+                window.location.reload();
             } else {
                 await setDoc(userDocRef, {
-                    username: user.displayName,
                     email: user.email,
+                    username: user.displayName,
                     profilePic: user.photoURL || "/default-profile.png",
                     role: "user",
+                    address: "",
+                    createdAt: serverTimestamp(),
+                    blocked: false
                 });
                 setProfilePic(user.photoURL || "/default-profile.png");
                 setUserRole("user");
+                window.location.reload();
             }
 
             setUser(user);
-            window.location.reload();
         } catch (error) {
             console.error("Error logging in with Google:", error);
         }
     };
-
     const handleRemoveItem = async (itemId) => {
         if (!currentUser) return;
 

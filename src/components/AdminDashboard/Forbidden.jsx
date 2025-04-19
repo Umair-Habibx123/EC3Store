@@ -3,7 +3,7 @@ import React from "react";
 
 const Forbidden = () => {
     return (
-        <div className="h-screen bg-gray-50 text-green-400 flex flex-col justify-center items-center p-4 sm:p-6 md:p-8">
+        <div className="-mt-[70px] h-screen bg-gray-50 text-green-400 flex flex-col justify-center items-center p-4 sm:p-6 md:p-8">
             {/* Terminal-style Container */}
             <div className="max-w-3xl w-full text-center border border-green-500 p-6 sm:p-8 md:p-10 rounded-xl shadow-2xl bg-gray-900">
                 {/* Error Title */}

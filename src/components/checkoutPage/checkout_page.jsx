@@ -162,7 +162,7 @@ const CheckoutPage = () => {
             const user = auth.currentUser;
             if (!user) throw new Error("User not authenticated");
 
-            
+
             const updatedOrderData = {
                 ...orderData,
                 shippingAddress: address,
@@ -177,6 +177,7 @@ const CheckoutPage = () => {
             const emailVariables = {
                 order_details: generateOrderDetailsHTML(updatedOrderData.items),
                 shipping_address: updatedOrderData.shippingAddress,
+                subtotal: updatedOrderData.totalPrice.toFixed(2),
                 total: updatedOrderData.totalPrice.toFixed(2),
                 payment_method: updatedOrderData.paymentMethod,
                 from_name: user.email || "Customer",
@@ -184,10 +185,10 @@ const CheckoutPage = () => {
 
             // Send confirmation email
             await emailjs.send(
-                "service_wng6lvv",
-                "template_zmbrbjb",
+                import.meta.env.VITE_EMAILJS_SERVICE_ID,
+                import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
                 emailVariables,
-                "kkvWuOpN6HHfFs475"
+                import.meta.env.VITE_EMAILJS_PUBLIC_KEY
             );
 
             alert("Order placed successfully!");

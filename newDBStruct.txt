@@ -18,7 +18,7 @@ products
      ||--- additionalImages: array [string]
      ||--- originalPrice: number
      ||--- discountedPrice: number
-     ||--- description: string
+     ||--- description: stringwww
      ||--- attributes: array (flexible by category)
           0- (map)
           {id: , name: , value}
@@ -54,6 +54,7 @@ userCart
                ||--- price: number
                ||--- quantity: number
                ||--- addedAt: Timestamp
+
 
 orders
 ||--- {orderId}

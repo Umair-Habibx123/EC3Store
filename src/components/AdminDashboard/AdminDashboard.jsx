@@ -1,10 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { 
-  Users, 
-  ShoppingBag, 
-  PlusCircle, 
-  UserCog, 
+import {
+  Users,
+  ShoppingBag,
+  PlusCircle,
+  UserCog,
   PackageCheck,
   LayoutDashboard
 } from "lucide-react";
@@ -27,7 +27,7 @@ function AdminDashboard() {
       {/* Main Content */}
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h2 className="text-xl font-semibold text-gray-800 mb-6">Management Tools</h2>
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {/* Show Users */}
           <Link to="/admin-dashboard/showUsers">

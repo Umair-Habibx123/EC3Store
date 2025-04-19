@@ -91,30 +91,36 @@ const ProductCard = ({ product }) => {
     }
   }
 
+ 
+  
   const handleAddToCart = async (e) => {
     e.stopPropagation();
     if (!userContext) {
       setShowLoginPrompt(true);
       return;
     }
-
+  
     setIsLoading(true);
     try {
       const cartItemsRef = collection(db, "userCart", userContext.uid, "cartItems");
-
+      console.log("Cart items reference:", cartItemsRef.path); // Debug log
+  
       const querySnapshot = await getDocs(
         query(cartItemsRef, where("productId", "==", product.id))
       );
-
+      console.log("Query snapshot size:", querySnapshot.size); // Debug log
+  
       if (!querySnapshot.empty) {
         const docSnapshot = querySnapshot.docs[0];
+        console.log("Existing cart item found:", docSnapshot.id); // Debug log
         const currentQuantity = docSnapshot.data().quantity || 1;
         await updateDoc(doc(cartItemsRef, docSnapshot.id), {
           quantity: currentQuantity + 1,
           addedAt: serverTimestamp()
         });
+        console.log("Quantity updated successfully"); // Debug log
       } else {
-        await addDoc(cartItemsRef, {
+        const newDocRef = await addDoc(cartItemsRef, {
           productId: product.id,
           title: product.title,
           price: product.discountedPrice,
@@ -122,16 +128,30 @@ const ProductCard = ({ product }) => {
           quantity: 1,
           addedAt: serverTimestamp()
         });
+        console.log("New cart item added with ID:", newDocRef.id); // Debug log
       }
-
+  
       setAdded(true);
       setTimeout(() => setAdded(false), 3000);
+      checkCart();
     } catch (error) {
-      console.error("Error adding to cart: ", error);
-    } finally {
-      setIsLoading(false);
+      console.error("Full error object:", error);
+      if (error.code === 'permission-denied') {
+        alert("You don't have permission to add to cart. Please check your account.");
+      } else {
+        alert("Failed to add item to cart. Please try again.");
+      }
     }
   };
+
+
+  const checkCart = async () => {
+    const cartItems = await getDocs(collection(db, "userCart", userContext.uid, "cartItems"));
+    console.log("Current cart items:", cartItems.docs.map(doc => doc.data()));
+  };
+
+
+
 
   const handleSignIn = async () => {
     try {
