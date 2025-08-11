@@ -135,7 +135,7 @@ const ContactUsForm = () => {
 
                 {/* Success Modal */}
                 {showModal && (
-                    <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50 backdrop-blur-sm transition-all duration-300">
+                    <div className="fixed inset-0 flex justify-center items-center bg-black/40 z-50 backdrop-blur-sm transition-all duration-300">
                         <div className="bg-white p-8 rounded-xl shadow-2xl max-w-md w-full mx-4 relative transform transition-all duration-300 animate-in fade-in-90 zoom-in-90">
                             <button
                                 onClick={() => setShowModal(false)}
